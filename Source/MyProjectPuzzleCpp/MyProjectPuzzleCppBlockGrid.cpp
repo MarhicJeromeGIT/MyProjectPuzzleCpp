@@ -26,7 +26,7 @@ AMyProjectPuzzleCppBlockGrid::AMyProjectPuzzleCppBlockGrid(const FObjectInitiali
 
 	// Set defaults
 	Size = 3;
-	BlockSpacing = 50.0f;
+	BlockSpacing = 46.0f;
 
 	lib = NULL;
 
@@ -76,7 +76,8 @@ void AMyProjectPuzzleCppBlockGrid::InitChessGrid()
 
 		for (int p = 0; p < 4; p++)
 		{
-			AChessPiece* newPiece = GetWorld()->SpawnActor<AChessPiece>(BlockLocation[p], FRotator(0, 0, 0));
+			int VertRot = (p < 2) ? 180 : 0;
+			AChessPiece* newPiece = GetWorld()->SpawnActor<AChessPiece>(BlockLocation[p], FRotator(0, VertRot, 0));
 			if (newPiece != NULL)
 			{
 				newPiece->BlockGrid = this;
@@ -87,14 +88,7 @@ void AMyProjectPuzzleCppBlockGrid::InitChessGrid()
 				Checkboard[rank[p]][i] = newPiece;
 
 				newPiece->setPieceType(AChessPiece::PAWN);
-				if (p < 2)
-				{
-					newPiece->setWhite();
-				}
-				else
-				{
-					newPiece->setBlack();
-				}
+				newPiece->setColor( p < 2 ); // p<2 => WHITE
 			}
 		}
 	}
@@ -212,14 +206,23 @@ void AMyProjectPuzzleCppBlockGrid::onPieceSelected(AChessPiece* piece)
 
 	for (int i = 0; i < moves.size(); i++)
 	{
-		FVector BlockLocation = FVector(moves[i].destRank * BlockSpacing, moves[i].destFile * BlockSpacing, 0.f) + GetActorLocation();
-		AMyProjectPuzzleCppBlock* newPiece = GetWorld()->SpawnActor<AMyProjectPuzzleCppBlock>(BlockLocation, FRotator(0, 0, 0));
-		SpawnedLegalMoveCubes.Push(newPiece);
+		int destFile = moves[i].destFile;
+		int destRank = moves[i].destRank;
+		if( Checkboard[destRank][destFile] != NULL ) // we are taking over a piece here
+		{
+			// we may now click on it
+			Checkboard[destRank][destFile]->setSelectable(true);
+		}
+		else
+		{
+			FVector BlockLocation = FVector(moves[i].destRank * BlockSpacing, moves[i].destFile * BlockSpacing, 0.f) + GetActorLocation();
+			AMyProjectPuzzleCppBlock* newPiece = GetWorld()->SpawnActor<AMyProjectPuzzleCppBlock>(BlockLocation, FRotator(0, 0, 0));
+			SpawnedLegalMoveCubes.Push(newPiece);
 
-		newPiece->OwningGrid = this;
-		newPiece->file = moves[i].destFile;
-		newPiece->rank = moves[i].destRank;
-
+			newPiece->OwningGrid = this;
+			newPiece->file = moves[i].destFile;
+			newPiece->rank = moves[i].destRank;
+		}
 	}	
 }
 
@@ -228,21 +231,14 @@ AChessPiece* AMyProjectPuzzleCppBlockGrid::getTargettedPiece()
 	return targettedPiece; 
 }
 
-void AMyProjectPuzzleCppBlockGrid::makeMove(AMyProjectPuzzleCppBlock* destination)
+void AMyProjectPuzzleCppBlockGrid::makeMove( int destFile, int destRank )
 {
 	BeginTurn();
 
-	if (selectedPiece == NULL) return;
-
 	static int origFile = 0;
 	static int origRank = 0;
-	static int destFile = 0;
-	static int destRank = 0;
 	origFile = selectedPiece->file;
 	origRank = selectedPiece->rank;
-	destFile = destination->file;
-	destRank = destination->rank;
-
 
 	Checkboard[origRank][origFile] = NULL;
 	if (Checkboard[destRank][destFile] != NULL)
@@ -269,7 +265,24 @@ void AMyProjectPuzzleCppBlockGrid::makeMove(AMyProjectPuzzleCppBlock* destinatio
 		SpawnedLegalMoveCubes[i]->Destroy();
 	}
 	SpawnedLegalMoveCubes.Empty();
+	for( int i=0; i< 8; i++ )
+	{
+		for( int j=0; j< 8; j++ )
+		{
+			if( Checkboard[i][j] != NULL )
+			{
+				Checkboard[i][j]->setSelectable(false);
+			}
+		}
+	}
+}
 
-	// HAVE THE AI PLAY ITS TURN:
-	//play();
+void AMyProjectPuzzleCppBlockGrid::makeMove(AChessPiece* destination)
+{
+	makeMove( destination->file, destination->rank );
+}
+
+void AMyProjectPuzzleCppBlockGrid::makeMove(AMyProjectPuzzleCppBlock* destination)
+{
+	makeMove( destination->file, destination->rank );
 }

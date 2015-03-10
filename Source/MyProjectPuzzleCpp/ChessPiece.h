@@ -19,7 +19,7 @@ class AChessPiece : public AActor
 
 	/** StaticMesh component for the clickable block */
 	UPROPERTY(Category = Block, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* PieceMesh;
+	class UStaticMeshComponent* PieceMesh;  
 
 
 public:	
@@ -35,10 +35,14 @@ public:
 	UMaterial* MaterialBlack;
 	UMaterial* MaterialGlowing;
 	UMaterial* DefaultMaterial;
-	void setWhite();
-	void setBlack();
+	UMaterial* MaterialSelectable;
+
+	bool isWhite;
+	bool isSelectable;
+	void setColor( bool isWhite );
 	void setSelected(bool selected);
-	
+	void setSelectable(bool selectable);
+
 	enum PieceType
 	{
 		PAWN,

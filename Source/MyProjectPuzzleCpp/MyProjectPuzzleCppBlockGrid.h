@@ -78,7 +78,10 @@ public:
 
 	AChessPiece* selectedPiece;
 	void onPieceSelected(AChessPiece* piece);
+
+	void makeMove( int file, int rank );
 	void makeMove(AMyProjectPuzzleCppBlock* destination);
+	void makeMove(AChessPiece* destination);
 
 	UFUNCTION(BlueprintCallable, Category = Chess)
 	void play();

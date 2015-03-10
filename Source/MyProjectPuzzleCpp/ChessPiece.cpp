@@ -9,6 +9,7 @@ AChessPiece::AChessPiece(const FObjectInitializer& ObjectInitializer) : Super(Ob
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	isSelectable = false;
 
 	// Structure to hold one-time initialization
 	struct FConstructorStatics
@@ -33,7 +34,7 @@ AChessPiece::AChessPiece(const FObjectInitializer& ObjectInitializer) : Super(Ob
 	// Create static mesh component
 	PieceMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BlockMesh0"));
 //	PieceMesh->SetStaticMesh(ConstructorStatics.PlaneMesh.Get());
-	PieceMesh->SetRelativeScale3D(FVector(0.7, 0.7, 0.7));
+	PieceMesh->SetRelativeScale3D(FVector(0.5,0.5,0.5));
 	PieceMesh->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	PieceMesh->AttachTo(DummyRoot);
 	PieceMesh->OnClicked.AddDynamic(this, &AChessPiece::PieceClicked);
@@ -42,13 +43,13 @@ AChessPiece::AChessPiece(const FObjectInitializer& ObjectInitializer) : Super(Ob
 	MaterialWhite   = NULL;
 	MaterialBlack   = NULL;
 	MaterialGlowing = NULL;
-	static ConstructorHelpers::FObjectFinder<UMaterial> FindWhiteMaterial(TEXT("Material'/Game/StarterContent/Materials/M_CobbleStone_Smooth.M_CobbleStone_Smooth'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> FindWhiteMaterial(TEXT("Material'/Game/StarterContent/Materials/M_Wood_Pine.M_Wood_Pine'"));
 	if (FindWhiteMaterial.Object != NULL)
 	{
 		MaterialWhite = (UMaterial*)FindWhiteMaterial.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterial> FindBlackMaterial(TEXT("Material'/Game/StarterContent/Materials/M_Wood_Floor_Walnut_Polished.M_Wood_Floor_Walnut_Polished'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> FindBlackMaterial(TEXT("Material'/Game/StarterContent/Materials/M_Wood_Walnut.M_Wood_Walnut'"));
 	if (FindBlackMaterial.Object != NULL)
 	{
 		MaterialBlack = (UMaterial*)FindBlackMaterial.Object;
@@ -60,6 +61,13 @@ AChessPiece::AChessPiece(const FObjectInitializer& ObjectInitializer) : Super(Ob
 		MaterialGlowing = (UMaterial*)FindGlowingMaterial.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UMaterial> FindSelectableMaterial(TEXT("Material'/Game/Puzzle/Materials/SelectableMaterial.SelectableMaterial'"));
+	if (FindSelectableMaterial.Object != NULL)
+	{
+		MaterialSelectable = (UMaterial*)FindSelectableMaterial.Object;
+	}
+
+	
 	
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> FindPawnMesh(TEXT("StaticMesh'/Game/Puzzle/Meshes/pawn.pawn'"));
@@ -78,22 +86,22 @@ AChessPiece::AChessPiece(const FObjectInitializer& ObjectInitializer) : Super(Ob
 
 }
 
-void AChessPiece::setWhite()
+void AChessPiece::setColor( bool white )
 {
-	DefaultMaterial = MaterialWhite;
-	PieceMesh->SetMaterial(0, MaterialWhite);
-}
-
-
-void AChessPiece::setBlack()
-{
-	DefaultMaterial = MaterialBlack;
-	PieceMesh->SetMaterial(0, MaterialBlack);
+	isWhite = white;
+	DefaultMaterial = isWhite ? MaterialWhite : MaterialBlack;
+	PieceMesh->SetMaterial(0, DefaultMaterial );
 }
 
 void AChessPiece::setSelected(bool selected)
 {
 	PieceMesh->SetMaterial(0, selected ? MaterialGlowing : DefaultMaterial);
+}
+
+void AChessPiece::setSelectable(bool selectable)
+{
+	isSelectable = selectable;
+	PieceMesh->SetMaterial(0, isSelectable ? MaterialSelectable : DefaultMaterial);
 }
 
 void AChessPiece::setPieceType(PieceType type)
@@ -116,7 +124,11 @@ void AChessPiece::Tick( float DeltaTime )
 
 void AChessPiece::PieceClicked(UPrimitiveComponent* ClickedComp)
 {
-	if (BlockGrid->IsReady())
+	if( isSelectable )
+	{
+		BlockGrid->makeMove(this);
+	}
+	else if (BlockGrid->IsReady())
 	{
 		setSelected(true);
 		BlockGrid->onPieceSelected(this);

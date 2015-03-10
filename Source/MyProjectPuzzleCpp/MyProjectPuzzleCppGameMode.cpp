@@ -3,6 +3,7 @@
 #include "MyProjectPuzzleCpp.h"
 #include "MyProjectPuzzleCppGameMode.h"
 #include "MyProjectPuzzleCppPlayerController.h"
+#include "MyHUD.h"
 
 AMyProjectPuzzleCppGameMode::AMyProjectPuzzleCppGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -11,4 +12,6 @@ AMyProjectPuzzleCppGameMode::AMyProjectPuzzleCppGameMode(const FObjectInitialize
 	DefaultPawnClass = NULL;
 	// use our own player controller class
 	PlayerControllerClass = AMyProjectPuzzleCppPlayerController::StaticClass();
+
+	HUDClass = AMyHUD::StaticClass();
 }
