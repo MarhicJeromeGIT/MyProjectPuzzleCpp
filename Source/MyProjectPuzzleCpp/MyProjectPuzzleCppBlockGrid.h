@@ -25,6 +25,10 @@ class AMyProjectPuzzleCppBlockGrid : public AActor
 public:
 
 	AChessPiece* Checkboard[8][8];
+	AChessPiece* PlayerKing;
+
+	UFUNCTION(BlueprintCallable, Category = CHESS )
+	AChessPiece* getPlayerKing();
 
 	UClass* MyPawnClass;
 
@@ -82,6 +86,9 @@ public:
 	void makeMove( int file, int rank );
 	void makeMove(AMyProjectPuzzleCppBlock* destination);
 	void makeMove(AChessPiece* destination);
+
+	UFUNCTION(BlueprintCallable, Category = Chess)
+	bool hasLost();
 
 	UFUNCTION(BlueprintCallable, Category = Chess)
 	void play();

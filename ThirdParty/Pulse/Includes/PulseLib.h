@@ -42,6 +42,7 @@ namespace pulse {
 		// Return all the possible moves from this position
 		void getMoveList(int origFile, int origRank, std::vector<myMove>& legalMoves);
 		 
+		bool hasLost();
 
 		void drawPos();
 	};

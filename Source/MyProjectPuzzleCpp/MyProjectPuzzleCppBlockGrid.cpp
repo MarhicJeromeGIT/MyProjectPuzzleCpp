@@ -111,12 +111,20 @@ void AMyProjectPuzzleCppBlockGrid::InitChessGrid()
 	Checkboard[7][6]->setPieceType(AChessPiece::KNIGHT);
 	Checkboard[7][7]->setPieceType(AChessPiece::TOWER);
 
+	PlayerKing = Checkboard[0][4];
+
+
 	// Initialize the Chess engine :
 	if (lib != NULL)
 		delete lib;
 	lib = new pulse::PulseLib();
 	lib->startGame();
 
+}
+
+AChessPiece* AMyProjectPuzzleCppBlockGrid::getPlayerKing()
+{ 
+	return PlayerKing;
 }
 
 void AMyProjectPuzzleCppBlockGrid::BeginTurn()
@@ -133,6 +141,11 @@ void AMyProjectPuzzleCppBlockGrid::EndTurn()
 bool AMyProjectPuzzleCppBlockGrid::IsAITurn()
 {
 	return(AIisWhite == WhiteTurn);
+}
+
+bool AMyProjectPuzzleCppBlockGrid::hasLost()
+{
+	return lib->hasLost();
 }
 
 void AMyProjectPuzzleCppBlockGrid::play()
